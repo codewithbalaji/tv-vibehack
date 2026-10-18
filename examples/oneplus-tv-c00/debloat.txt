@@ -1,0 +1,32 @@
+# OnePlus TV (model C00, codename Cebu), Android TV 11, firmware RTM8.240401.135
+# Live TV app: com.heytap.tv.livetv. Input menu: com.heytap.tv.support/.SourceListActivity.
+# This unit came with FLauncher (me.efesser.flauncher) as home and 26 packages already disabled
+# (stock tvlauncher, tvrecommendations, OnePlus launcher, Assistant, Miracast, Netflix, Prime...).
+# Those are left as they were; this list only holds what was disabled on top.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/oneplus-tv-c00/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/oneplus-tv-c00/debloat.txt me.efesser.flauncher
+#
+# Kept on purpose: Chromecast (com.google.android.apps.mediashell), firmware updates
+# (com.oneplus.tv.systemupgrade, com.heytap.oprcupgradeservice), heytap.tv.support (input menu),
+# heytap.tvapiservice (picture quality DB), oneplus.tv.remote + mediatek.hotkey.dispatcher (remote).
+
+# Telemetry / diagnostics
+com.google.android.partnersetup        # RLZ usage pings
+com.heytap.tv.remotecontrolinspect     # remote diagnostics app
+
+# Background services not needed
+com.android.printspooler               # printing
+
+# Preloaded apps
+com.heytap.tv.filebrowser              # USB file browser / gallery / music player
+com.heytap.tv.camera                   # camera app
+com.heytap.tv.btspeaker                # Bluetooth speaker mode
+com.oneplus.tv.screensaver             # stock screensaver, replaced by the launcher's Clock
+
+# Streaming / extra apps not used
+com.spotify.tv.android
+com.lionsgateplay.videoapp
+com.jiostb.jiogames
+com.jio.web.androidtv                  # JioSphere browser
+com.phlox.tvwebbrowser                 # TV Bro browser

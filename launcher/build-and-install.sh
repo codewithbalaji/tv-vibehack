@@ -7,16 +7,25 @@ STOCK_LAUNCHER="${STOCK_LAUNCHER:-com.google.android.tvlauncher}"
 export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home -v 17 2>/dev/null || echo /opt/homebrew/opt/openjdk@17)}"
 export ANDROID_HOME="${ANDROID_HOME:-$([ -d ~/Library/Android/sdk ] && echo ~/Library/Android/sdk || echo /opt/homebrew/share/android-commandlinetools)}"
 export PATH="$JAVA_HOME/bin:$PATH"
-[ -f local.properties ] || echo "sdk.dir=$ANDROID_HOME" > local.properties
+# forward slashes: a Windows path's backslashes are escapes in a .properties file
+[ -f local.properties ] || echo "sdk.dir=${ANDROID_HOME//\\//}" > local.properties
 ./gradlew assembleDebug -q --console=plain
 PY=../tools/venv/bin/python
 [ -x "$PY" ] || PY=../tools/venv/Scripts/python.exe
 export MSYS_NO_PATHCONV=1
 APK=app/build/outputs/apk/debug/app-debug.apk
 "$PY" -I ../tools/b64push.py "$APK" /data/local/tmp/tvhome.apk
-printf '%s\n' \
+# Play Protect rejects ADB installs on some sets (INSTALL_FAILED_VERIFICATION_FAILURE, seen on OnePlus C00).
+# shortcut: resets the setting to its default afterwards, not to a custom value a user may have set.
+OUT=$(printf '%s\n' \
+  "settings put global verifier_verify_adb_installs 0" \
   "pm install -r /data/local/tmp/tvhome.apk" \
+  "settings delete global verifier_verify_adb_installs" \
   "rm -f /data/local/tmp/tvhome.apk" \
+  | "$PY" -I ../tools/tv.py --batch)
+echo "$OUT"
+grep -q Success <<<"$OUT" || { echo "pm install failed; the stock launcher was left untouched"; exit 1; }
+printf '%s\n' \
   "pm grant com.gathin.tvhome android.permission.ACCESS_FINE_LOCATION 2>/dev/null; echo location-granted" \
   "cmd package set-home-activity --user 0 com.gathin.tvhome/.MainActivity" \
   "pm disable-user --user 0 $STOCK_LAUNCHER" \
